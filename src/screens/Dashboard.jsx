@@ -23,7 +23,7 @@ export default function Dashboard({ openBin }) {
         <Stat lab="Uptime" val={s.uptime} unit="%" icon="wifi" delta={`${s.online}/${s.total} online`} deltaType="up" decimals={1} />
       </div>
 
-      <Panel title="Fleet at a Glance" hint="all 14 bins · live" className="mb16">
+      <Panel title="Fleet at a Glance" hint={`all ${s.total} bins · live`} className="mb16">
         <TruckRun />
         <div className="fleetstrip">
           {fleet.map((b) => (
