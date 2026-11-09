@@ -1,9 +1,23 @@
 # BinPulse Console — React + Vite
 
-A smart-waste fleet operations console: 17 screens across 6 navigation groups,
+A smart-waste **fleet operations console**: 17 screens across 6 navigation groups,
 with client-side simulated live sensor data (BIN-A1 represents the real ESP32 bin).
 
-## Run it
+### 🌐 Live demo: **https://roshanneela.github.io/binpulse/**
+
+---
+
+## Features
+
+- **17 screens / 6 groups** — Monitor, Operations, Assistant, Insights, Devices, Administration.
+- **Live simulated telemetry** — the 14-bin fleet drifts every 3 seconds; BIN-A1 is overlaid as the "real" ESP32 bin.
+- **Animated bin graphics** — bins fill to their live level with a wobbling surface, bobbing lid, and overflow when full; a procedurally-generated bin scene fills with type-appropriate trash (recycling / organic / general).
+- **Live Map** — a static street map with animated waste-bin markers that show each bin's fill level, color-coded by status.
+- **Pure-SVG charts** — gauges, sparklines, a glowing 24h area chart with a danger zone, and gradient bar charts; no chart library.
+- **AI Voice Assistant** — answers fleet queries from live data with a typewriter effect.
+- **Light + dark themes** — token-based design system, respects `prefers-reduced-motion`.
+
+## Run it locally
 
 ```bash
 npm install     # first time only
@@ -13,6 +27,26 @@ npm run preview # preview the production build
 ```
 
 Requires Node.js 18+ (tested on Node 24).
+
+## Tech stack
+
+- **React 18** + **Vite 5** (ES modules, JSX)
+- React Context for shared live-fleet state; custom hash-based routing (no router dependency)
+- Pure SVG + CSS animations (no animation library); Google Fonts (Sora, Manrope, JetBrains Mono)
+
+## Deployment
+
+The site is hosted on **GitHub Pages** and deployed automatically by GitHub Actions.
+
+- `.github/workflows/deploy.yml` builds on every push to `main` and publishes `dist/`.
+- `vite.config.js` uses `base: './'` so the build works under the Pages subpath.
+- To redeploy: just push to `main` — `git push` triggers a new build + deploy.
+
+```bash
+git add -A
+git commit -m "your change"
+git push
+```
 
 ## Project structure
 
@@ -29,6 +63,9 @@ src/
     icons.jsx              # inline SVG icon set + <Icon>
     ui.jsx                 # Panel, PageHeader, Stat, Badge, Meter, Toggle, Avatar, AnimatedNumber
     charts.jsx             # Gauge, Spark, AreaChart, BarChart, Donut (pure SVG)
+    BinGlyph.jsx           # animated waste-bin glyph (fill level + wobble + lid)
+    BinScene.jsx           # procedurally-generated animated bin illustration
+    TruckRun.jsx           # driving collection-truck animation
     Sidebar.jsx, Topbar.jsx, EventRow.jsx
   screens/                 # one file per screen (17 total)
     Dashboard, BinMonitoring, BinDetails, LiveMap,
