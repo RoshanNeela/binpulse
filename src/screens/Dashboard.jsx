@@ -5,12 +5,12 @@ import { BinScene } from '../components/BinScene.jsx'
 import { BinGlyph } from '../components/BinGlyph.jsx'
 import { TruckRun } from '../components/TruckRun.jsx'
 import EventRow from '../components/EventRow.jsx'
-import { ZONES, ago, fillColor, statusClass } from '../data/model.js'
+import { ZONES, GHATS, ago, fillColor, statusClass } from '../data/model.js'
 
 export default function Dashboard({ openBin }) {
   const { fleet, events, history, stats: s } = useFleet()
   const a1 = fleet[0]
-  const zoneFull = ZONES.map((z) => ({ l: z.slice(0, 4), v: fleet.filter((b) => b.zone === z && b.fill >= 80).length }))
+  const zoneFull = ZONES.map((z) => ({ l: GHATS[z].code, v: fleet.filter((b) => b.zone === z && b.fill >= 80).length }))
   return (
     <>
       <PageHeader title="Fleet Dashboard" sub="Real-time overview of all collection points · BIN-A1 streaming live from ESP32" />
@@ -60,7 +60,7 @@ export default function Dashboard({ openBin }) {
       </div>
 
       <div className="cols-side">
-        <Panel title="Full Bins by Zone" hint="count ≥80%">
+        <Panel title="Full Bins by Ghat" hint="count ≥80%">
           <BarChart data={zoneFull} h={200} fmtColor={(d) => (d.v >= 2 ? 'var(--crit)' : d.v === 1 ? 'var(--warn)' : 'var(--accent)')} />
         </Panel>
         <Panel title="Live Event Stream" hint="auto">

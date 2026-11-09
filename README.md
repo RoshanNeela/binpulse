@@ -12,7 +12,7 @@ with client-side simulated live sensor data (BIN-A1 represents the real ESP32 bi
 - **17 screens / 6 groups** — Monitor, Operations, Assistant, Insights, Devices, Administration.
 - **Live simulated telemetry** — the 14-bin fleet drifts every 3 seconds; BIN-A1 is overlaid as the "real" ESP32 bin.
 - **Animated bin graphics** — bins fill to their live level with a wobbling surface, bobbing lid, and overflow when full; a procedurally-generated bin scene fills with type-appropriate trash (recycling / organic / general).
-- **Live Map** — a static street map with animated waste-bin markers that show each bin's fill level, color-coded by status.
+- **Live Map** — the Godavari riverfront at Rajamahendravaram (PS07 / Pushkaralu 2027), with the ghats as zones, PS07 Red/Yellow/Green crowd-density bands, animated bin markers color-coded by fill level, and a **Street View** mode with live Google Street View of each ghat.
 - **Pure-SVG charts** — gauges, sparklines, a glowing 24h area chart with a danger zone, and gradient bar charts; no chart library.
 - **AI Voice Assistant** — answers fleet queries from live data with a typewriter effect.
 - **Light + dark themes** — token-based design system, respects `prefers-reduced-motion`.
@@ -76,11 +76,13 @@ src/
 
 ## Shared data model
 
-- **Bin:** id, name, sector, zone (Central/North/East/South/West), x/y map coords,
-  fill %, distance, capacity L, battery %, rssi, temp, fillRate %/h, team,
-  type (General/Recycling/Organic), online, sensorOk, lastUpdateS, isReal.
+- **Bin:** id, name, sector (grid cell e.g. `G5-A1`), zone (Godavari ghat), density
+  (PS07 Red/Yellow/Green), x/y map coords, fill %, distance, capacity L, battery %, rssi,
+  temp, fillRate %/h, team, type (General/Recycling/Organic), online, sensorOk, lastUpdateS, isReal.
+- **Ghats (zones):** Durgamma · Godavari River · Godavari Nitya Aarti · Pushkar · Padmavathi — each with a grid code and riverfront coordinates (`GHATS` in `model.js`) used for Street View.
+- **Density zones (PS07):** Red (ghats, 25 m / 10 min) · Yellow (food/vendors, 50 m / 20 min) · Green (parking/stalls, 100 m / 45 min) — `DENSITY` in `model.js`.
 - **Status thresholds:** ≥80 Full · ≥50 Almost full · else Available.
-- **Fleet:** 14 bins · 5 zones · 5 teams (Alpha–Echo); drifts every 3s; BIN-A1 is the live bin.
+- **Fleet:** 14 bins · 5 ghats · 5 teams (Alpha–Echo); drifts every 3s; BIN-A1 is the live bin.
 - **Mock entities:** CREW, USERS, ROLES/PERM_KEYS, API_KEYS, CHAT_SESSIONS, VOICE_INTENTS.
 
 ## Going live (replace the simulation)

@@ -1,26 +1,23 @@
 import { useState } from 'react'
 import { useFleet } from '../state/FleetContext.jsx'
 import { PageHeader, Panel } from '../components/ui.jsx'
-import { ZONES, fillColor, colorFor } from '../data/model.js'
+import { ZONES, GHATS, DENSITY, fillColor, streetViewUrl, mapsLink } from '../data/model.js'
 
-const ZONEBOX = {
-  Central: [32, 34, 36, 32], North: [18, 6, 64, 24], East: [62, 30, 34, 38],
-  South: [20, 66, 46, 30], West: [4, 30, 26, 38],
-}
-// layered roads: wide casing + lighter surface drawn on top
-const ROADS = [
-  { d: 'M0 46 H100', w: 5.4 }, { d: 'M50 0 V92', w: 5.4 },
-  { d: 'M0 22 H100', w: 3 }, { d: 'M0 70 H100', w: 3 },
-  { d: 'M24 0 V92', w: 3 }, { d: 'M76 0 V92', w: 3 },
-  { d: 'M50 46 L94 10', w: 3 },
+// PS07 density bands laid left→right across the cross-section of the ghat (river on the left).
+const BANDS = [
+  { key: 'Red', x: 20, w: 19 },
+  { key: 'Yellow', x: 39, w: 24 },
+  { key: 'Green', x: 63, w: 37 },
 ]
-// building blocks for city texture [x,y,w,h]
-const BLOCKS = [
-  [4, 24, 16, 18], [4, 48, 16, 18], [28, 2, 18, 16], [54, 2, 18, 16],
-  [54, 26, 18, 16], [80, 26, 16, 16], [28, 50, 18, 16], [54, 50, 18, 16],
-  [28, 74, 18, 14], [54, 74, 18, 14],
+// Ghat segments stacked along the Godavari (top→south), matching the PS07 ghat plan.
+const SEG = [
+  { name: 'Durgamma Ghat', code: 'G1', y0: 0, y1: 20 },
+  { name: 'Godavari River Ghat', code: 'G3', y0: 20, y1: 39 },
+  { name: 'Godavari Nitya Aarti', code: 'G4', y0: 39, y1: 55 },
+  { name: 'Pushkar Ghat', code: 'G5', y0: 55, y1: 70 },
+  { name: 'Padmavathi Ghat', code: 'G6', y0: 70, y1: 92 },
 ]
-const DEPOT = [8, 84]
+const RMC = [90, 86] // Resource Recovery Centre
 
 // an animated waste bin placed on the map: contents fill to the live level,
 // the surface wobbles and the lid bobs (lid flips open when full)
@@ -64,8 +61,8 @@ function MapBin({ b, dim, onClick }) {
         </g>
       </g>
       {b.isReal && <circle cx="0" cy="-5.5" r="7.5" fill="none" stroke={c} strokeWidth="0.6" strokeDasharray="1.6 1.6" opacity=".8" />}
-      <g className="pin-label" transform={`translate(0 ${b.y < 24 ? 3 : -12.5})`}>
-        {b.y < 24 ? (
+      <g className="pin-label" transform={`translate(0 ${b.y < 18 ? 3 : -12.5})`}>
+        {b.y < 18 ? (
           <>
             <path d="M-1.7 -0.4 L0 -2.3 L1.7 -0.4 Z" fill="var(--fg)" />
             <rect x="-13" y="-0.4" width="26" height="6.4" rx="2.2" fill="var(--fg)" />
@@ -83,25 +80,74 @@ function MapBin({ b, dim, onClick }) {
   )
 }
 
+// Live Google Street View of a ghat's riverfront point (keyless embed).
+function StreetView({ ghat, onPick }) {
+  const g = GHATS[ghat]
+  return (
+    <div className="mapwrap mapwrap-static">
+      <div className="svchips">
+        {ZONES.map((z) => (
+          <button key={z} className={`chip ${ghat === z ? 'on' : ''}`} onClick={() => onPick(z)}>
+            {GHATS[z].code} · {GHATS[z].short}
+          </button>
+        ))}
+      </div>
+      <iframe
+        key={ghat}
+        title={`Street View — ${ghat}`}
+        className="svframe"
+        src={streetViewUrl(g.lat, g.lng, g.heading)}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
+      />
+      <div className="maplegend">
+        <span><span className="dot" style={{ background: DENSITY.Red.color }} />{g.code} · {ghat}</span>
+        <span className="sep" />
+        <a className="svlink" href={mapsLink(g.lat, g.lng)} target="_blank" rel="noreferrer">Open in Google Maps ↗</a>
+      </div>
+      <div className="svnote">Live Google Street View · imagery © Google · point is illustrative, verify with GIS survey</div>
+    </div>
+  )
+}
+
 export default function LiveMap({ openBin }) {
   const { fleet } = useFleet()
   const [zone, setZone] = useState('all')
+  const [view, setView] = useState('map')
+  const [svGhat, setSvGhat] = useState('Pushkar Ghat')
   const inZone = (b) => zone === 'all' || b.zone === zone
   const shown = fleet.filter(inZone)
   const priority = [...shown].sort((a, b) => b.fill - a.fill)
+
+  const openStreet = () => {
+    if (zone !== 'all') setSvGhat(zone)
+    setView('street')
+  }
+  const pickGhat = (z) => { setSvGhat(z); setZone(z) }
+
   return (
     <>
       <PageHeader
         title="Live Map"
-        sub="City-wide collection network · markers color-coded by fill level"
+        sub="Godavari riverfront · Rajamahendravaram · markers by fill level, bands by PS07 crowd-density zone"
         actions={
-          <select className="sel" value={zone} onChange={(e) => setZone(e.target.value)}>
-            <option value="all">All zones</option>
-            {ZONES.map((z) => <option key={z}>{z}</option>)}
-          </select>
+          <>
+            <div className="segbar">
+              <button className={`chip ${view === 'map' ? 'on' : ''}`} onClick={() => setView('map')}>Map</button>
+              <button className={`chip ${view === 'street' ? 'on' : ''}`} onClick={openStreet}>Street View</button>
+            </div>
+            <select className="sel" value={zone} onChange={(e) => setZone(e.target.value)}>
+              <option value="all">All ghats</option>
+              {ZONES.map((z) => <option key={z}>{z}</option>)}
+            </select>
+          </>
         }
       />
       <div className="cols-side">
+        {view === 'street' ? (
+          <StreetView ghat={svGhat} onPick={pickGhat} />
+        ) : (
         <div className="mapwrap mapwrap-static">
           <svg viewBox="0 0 100 92">
             <defs>
@@ -109,68 +155,92 @@ export default function LiveMap({ openBin }) {
                 <stop offset="0" stopColor="var(--surface-2)" />
                 <stop offset="1" stopColor="var(--surface)" />
               </linearGradient>
+              <linearGradient id="mp-river" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#3f8fba" />
+                <stop offset="1" stopColor="#5ea8cf" />
+              </linearGradient>
             </defs>
 
             {/* land */}
             <rect x="0" y="0" width="100" height="92" fill="url(#mp-land)" />
 
-            {/* river + lake */}
-            <path d="M-3 13 Q 28 23 52 17 T 103 30 L103 36 Q 60 25 40 31 Q 18 37 -3 20 Z"
-              fill="#5ea8cf" opacity=".45" />
-            <ellipse cx="86" cy="80" rx="12" ry="8" fill="#5ea8cf" opacity=".45" />
-
-            {/* parks */}
-            <ellipse cx="18" cy="64" rx="10" ry="8" fill="var(--ok)" opacity=".16" />
-            <ellipse cx="88" cy="48" rx="7" ry="9" fill="var(--ok)" opacity=".16" />
-
-            {/* building blocks */}
-            {BLOCKS.map((r, i) => (
-              <rect key={i} x={r[0]} y={r[1]} width={r[2]} height={r[3]} rx="1.4"
-                fill="var(--surface)" stroke="var(--border)" strokeWidth="0.4" opacity=".55" />
+            {/* density bands (PS07 Red / Yellow / Green) */}
+            {BANDS.map((bd) => (
+              <g key={bd.key}>
+                <rect x={bd.x} y="0" width={bd.w} height="92" fill={DENSITY[bd.key].color} opacity="0.07" />
+                <rect x={bd.x} y="0" width="0.4" height="92" fill={DENSITY[bd.key].color} opacity="0.3" />
+                <text x={bd.x + 1.6} y="90" fontSize="2.3" fontWeight="800" letterSpacing="0.2"
+                  fill={DENSITY[bd.key].color} opacity="0.8">
+                  {DENSITY[bd.key].label.toUpperCase()} · {DENSITY[bd.key].spacing}
+                </text>
+              </g>
             ))}
 
-            {/* roads: casing then surface */}
-            {ROADS.map((r, i) => <path key={'c' + i} d={r.d} fill="none" stroke="var(--border)" strokeWidth={r.w} strokeLinecap="round" />)}
-            {ROADS.map((r, i) => <path key={'s' + i} d={r.d} fill="none" stroke="var(--surface)" strokeWidth={r.w - 1.6} strokeLinecap="round" />)}
+            {/* Godavari river (flows top → south, west bank) */}
+            <path d="M-4 -4 V96 L19 96 Q 23 80 19.5 64 Q 16.5 48 20 32 Q 23.5 18 18 -4 Z" fill="url(#mp-river)" opacity=".55" />
+            <path d="M14 -4 Q 11 24 15 48 Q 18 72 12 96" fill="none" stroke="#fff" strokeWidth="0.5" opacity=".35" />
+            <path d="M7 -4 Q 5 26 9 50 Q 12 74 6 96" fill="none" stroke="#fff" strokeWidth="0.4" opacity=".22" />
+            <text x="8" y="50" fontSize="2.8" fill="#2b6b8c" fontWeight="800" opacity=".8"
+              transform="rotate(-90 8 50)" letterSpacing="0.6">GODAVARI RIVER</text>
 
-            {/* street names */}
-            <text x="51.4" y="60" fontSize="2.3" fill="var(--muted)" opacity=".7" fontWeight="600" transform="rotate(90 51.4 60)">CENTRAL AVE</text>
-            <text x="64" y="44.4" fontSize="2.3" fill="var(--muted)" opacity=".7" fontWeight="600">MARKET ST</text>
-
-            {/* neighborhood labels */}
-            {Object.entries(ZONEBOX).map(([z, r]) => {
-              const active = inZone({ zone: z })
+            {/* ghat segments: divider + ghat marker on the bank + access road + label */}
+            {SEG.map((s, i) => {
+              const mid = (s.y0 + s.y1) / 2
+              const active = zone === 'all' || zone === s.name
               return (
-                <text key={z} x={r[0] + r[2] / 2} y={r[1] + 4.5} textAnchor="middle" fontSize="3"
-                  fill="var(--muted)" fontWeight="700" opacity={active ? 0.5 : 0.25} letterSpacing="0.3">
-                  {z.toUpperCase()}
-                </text>
+                <g key={s.code} opacity={active ? 1 : 0.5}>
+                  {/* promenade / steps at the water's edge */}
+                  {[0, 1, 2, 3].map((k) => (
+                    <line key={k} x1="16.5" y1={mid - 3 + k * 2} x2="20" y2={mid - 3 + k * 2}
+                      stroke="var(--border)" strokeWidth="0.5" opacity=".6" />
+                  ))}
+                  {/* access road (entry/exit) inland */}
+                  <path d={`M20 ${mid} H98`} fill="none" stroke="var(--border)" strokeWidth="2.4" strokeLinecap="round" />
+                  <path d={`M20 ${mid} H98`} fill="none" stroke="var(--surface)" strokeWidth="1.1" strokeLinecap="round" />
+                  {/* ghat flame / aarti marker */}
+                  <g transform={`translate(19 ${mid})`}>
+                    <circle r="2.1" fill="var(--crit)" stroke="#fff" strokeWidth="0.5" />
+                    <path d="M0 -1.1 Q 0.9 0 0 1 Q -0.9 0 0 -1.1 Z" fill="#fff" />
+                  </g>
+                  {/* ghat label chip */}
+                  <g transform={`translate(21 ${s.y0 + 2})`}>
+                    <rect x="0" y="0" width={GHATS[s.name].short.length * 1.5 + 10} height="5.4" rx="2.6"
+                      fill="var(--surface)" stroke="var(--border)" strokeWidth="0.4" opacity=".95" />
+                    <text x="2.6" y="3.7" fontSize="2.8" fontWeight="800" fill="var(--muted)">
+                      <tspan fill="var(--accent-2)">{s.code}</tspan> · {GHATS[s.name].short}
+                    </text>
+                  </g>
+                  {/* segment divider */}
+                  {i < SEG.length - 1 && (
+                    <line x1="18" y1={s.y1} x2="100" y2={s.y1} stroke="var(--border)" strokeWidth="0.3" strokeDasharray="1.4 1.6" opacity=".55" />
+                  )}
+                </g>
               )
             })}
 
-            {/* depot */}
-            <g transform={`translate(${DEPOT[0]} ${DEPOT[1]})`}>
-              <rect x="-3.4" y="-3.8" width="6.8" height="5.2" rx="1" fill="var(--accent-2)" stroke="#fff" strokeWidth="0.6" />
-              <path d="M-3.9 -3.8 L0 -6.3 L3.9 -3.8 Z" fill="var(--accent)" stroke="#fff" strokeWidth="0.5" />
+            {/* Resource Recovery Centre (RMC) */}
+            <g transform={`translate(${RMC[0]} ${RMC[1]})`}>
+              <rect x="-3.6" y="-3.8" width="7.2" height="5.2" rx="1" fill="var(--accent-2)" stroke="#fff" strokeWidth="0.6" />
+              <path d="M-4 -3.8 L0 -6.3 L4 -3.8 Z" fill="var(--accent)" stroke="#fff" strokeWidth="0.5" />
               <rect x="-1" y="-1.8" width="2" height="3.2" rx="0.3" fill="#fff" opacity=".85" />
-              <text y="5" textAnchor="middle" fontSize="3" fontWeight="700" fill="var(--muted)">DEPOT</text>
+              <text y="4.6" textAnchor="middle" fontSize="2.8" fontWeight="700" fill="var(--muted)">RMC</text>
             </g>
 
             {/* animated bin markers */}
             {fleet.map((b) => <MapBin key={b.id} b={b} dim={!inZone(b)} onClick={() => openBin(b.id)} />)}
 
             {/* compass */}
-            <g transform="translate(92 9)">
+            <g transform="translate(93 9)">
               <circle r="5.4" fill="var(--surface)" stroke="var(--border)" strokeWidth="0.6" opacity=".95" />
               <path d="M0 -4 L1.8 1 L0 -0.4 L-1.8 1 Z" fill="var(--crit)" />
               <text y="-4.6" textAnchor="middle" fontSize="2.8" fontWeight="700" fill="var(--muted)">N</text>
             </g>
             {/* scale bar */}
-            <g transform="translate(70 87)">
-              <line x1="0" y1="0" x2="20" y2="0" stroke="var(--fg)" strokeWidth="0.8" />
+            <g transform="translate(70 70)">
+              <line x1="0" y1="0" x2="18" y2="0" stroke="var(--fg)" strokeWidth="0.8" />
               <line x1="0" y1="-1.4" x2="0" y2="1.4" stroke="var(--fg)" strokeWidth="0.8" />
-              <line x1="20" y1="-1.4" x2="20" y2="1.4" stroke="var(--fg)" strokeWidth="0.8" />
-              <text x="10" y="-2.2" textAnchor="middle" fontSize="3" fill="var(--muted)" fontWeight="600">2 km</text>
+              <line x1="18" y1="-1.4" x2="18" y2="1.4" stroke="var(--fg)" strokeWidth="0.8" />
+              <text x="9" y="-2.2" textAnchor="middle" fontSize="3" fill="var(--muted)" fontWeight="600">200 m</text>
             </g>
           </svg>
 
@@ -179,9 +249,11 @@ export default function LiveMap({ openBin }) {
               <span key={l[0]}><span className="dot" style={{ background: l[1] }} />{l[0]}</span>
             ))}
             <span className="sep" />
-            <span><span className="dot" style={{ background: 'var(--accent-2)' }} />Depot</span>
+            <span><span className="dot" style={{ background: 'var(--accent-2)' }} />RMC</span>
           </div>
+          <div className="svnote">Preliminary ghat grid — verify dimensions and boundaries with georeferenced GIS/survey data (PS07)</div>
         </div>
+        )}
 
         <Panel title="Priority List" hint="fullest first">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 520, overflowY: 'auto' }}>
@@ -190,7 +262,10 @@ export default function LiveMap({ openBin }) {
                 <span style={{ width: 9, height: 9, borderRadius: '50%', background: fillColor(b.fill), flex: 'none' }} />
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: 'block', fontWeight: 600 }}>{b.name}</span>
-                  <span className="mono" style={{ fontSize: 11, color: 'var(--muted)' }}>{b.id} · {b.zone}</span>
+                  <span className="mono" style={{ fontSize: 11, color: 'var(--muted)' }}>
+                    {b.id} · {b.sector}
+                    <span style={{ color: DENSITY[b.density].color, fontWeight: 700 }}> · {DENSITY[b.density].label}</span>
+                  </span>
                 </span>
                 <b style={{ marginLeft: 'auto', color: fillColor(b.fill) }}>{b.fill}%</b>
               </button>

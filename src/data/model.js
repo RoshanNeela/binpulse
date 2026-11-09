@@ -3,30 +3,54 @@
 // In this demo the data is simulated client-side (driftFleet). Swap driftFleet's body
 // for fetch('/api/status') etc. to drive the UI from a live backend.
 
-export const ZONES = ['Central', 'North', 'East', 'South', 'West']
+// Zones = Godavari Pushkaralu 2027 riverfront ghats (PS07 reference), Rajamahendravaram.
+export const ZONES = ['Durgamma Ghat', 'Godavari River Ghat', 'Godavari Nitya Aarti', 'Pushkar Ghat', 'Padmavathi Ghat']
 export const TEAMS = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo']
 export const TYPES = ['General', 'Recycling', 'Organic']
+
+// Ghat metadata — grid code + approximate riverfront coordinates for Street View.
+// Coordinates are illustrative; verify with georeferenced GIS/survey data (per PS07 brief).
+export const GHATS = {
+  'Durgamma Ghat':        { code: 'G1', short: 'Durgamma',    lat: 17.0051, lng: 81.7869, heading: 210 },
+  'Godavari River Ghat':  { code: 'G3', short: 'River Ghat',  lat: 16.9991, lng: 81.7844, heading: 205 },
+  'Godavari Nitya Aarti': { code: 'G4', short: 'Nitya Aarti', lat: 16.9956, lng: 81.7830, heading: 210 },
+  'Pushkar Ghat':         { code: 'G5', short: 'Pushkar',     lat: 16.9933, lng: 81.7818, heading: 220 },
+  'Padmavathi Ghat':      { code: 'G6', short: 'Padmavathi',  lat: 16.9894, lng: 81.7797, heading: 215 },
+}
+
+// Density zones from the PS07 Grid Allocation Framework.
+export const DENSITY = {
+  Red:    { label: 'Red',    name: 'Hyper-crowded',  env: 'Bathing ghats, temple lanes',    spacing: '25 m',  interval: '10 min', color: '#e0524b' },
+  Yellow: { label: 'Yellow', name: 'High-traffic',   env: 'Food zones, vendor sidewalks',   spacing: '50 m',  interval: '20 min', color: '#d79020' },
+  Green:  { label: 'Green',  name: 'Medium-traffic', env: 'Transit drops, parking, stalls', spacing: '100 m', interval: '45 min', color: '#3f9d58' },
+}
+
+// Keyless Google Street View / map embeds for a ghat's riverfront point.
+export const streetViewUrl = (lat, lng, heading = 210) =>
+  `https://maps.google.com/maps?q=&layer=c&cbll=${lat},${lng}&cbp=11,${heading},0,0,0&output=svembed`
+export const mapsLink = (lat, lng) => `https://www.google.com/maps/@${lat},${lng},18z`
 
 export const rnd = (a, b) => a + Math.random() * (b - a)
 export const ri = (a, b) => Math.floor(rnd(a, b + 1))
 export const pick = (a) => a[ri(0, a.length - 1)]
 
-// id, name, sector, zone, x, y, startFill, isReal
+// id, name, sector (grid cell), zone (ghat), x, y, startFill, isReal, density
+// x splits into PS07 density bands: Red ghat steps (~24-28), Yellow food/vendor (~50-53), Green parking (~80-82).
 const BINSEED = [
-  ['A1', 'Market Square', 'S-01', 'Central', 48, 42, 78, true],
-  ['A2', 'City Hall Plaza', 'S-02', 'Central', 58, 54, 62, false],
-  ['A3', 'Transit Hub', 'S-03', 'Central', 40, 62, 91, false],
-  ['B1', 'Riverside Park', 'N-11', 'North', 30, 22, 45, false],
-  ['B2', 'North Mall', 'N-12', 'North', 62, 18, 83, false],
-  ['B3', 'Hillcrest Ave', 'N-13', 'North', 75, 34, 37, false],
-  ['C1', 'Harbor Docks', 'E-21', 'East', 82, 50, 88, false],
-  ['C2', 'Tech Campus', 'E-22', 'East', 88, 66, 54, false],
-  ['C3', 'East Gate', 'E-23', 'East', 70, 78, 29, false],
-  ['D1', 'Stadium South', 'S-31', 'South', 46, 82, 95, false],
-  ['D2', 'Garden District', 'S-32', 'South', 34, 70, 41, false],
-  ['E1', 'West Market', 'W-41', 'West', 16, 46, 67, false],
-  ['E2', 'Industrial Row', 'W-42', 'West', 22, 30, 73, false],
-  ['E3', 'Lakeside', 'W-43', 'West', 12, 64, 19, false],
+  ['A1', 'Pushkar Main Ghat',         'G5-A1', 'Pushkar Ghat',         27, 60, 78, true,  'Red'],
+  ['A3', 'Pushkar Changing Rooms',    'G5-B1', 'Pushkar Ghat',         24, 66, 91, false, 'Red'],
+  ['E1', 'Pushkar Food Distribution', 'G5-B2', 'Pushkar Ghat',         52, 62, 67, false, 'Yellow'],
+  ['C1', 'River Ghat Bathing Steps',  'G3-A1', 'Godavari River Ghat',  28, 26, 88, false, 'Red'],
+  ['A2', 'River Ghat Aarti Platform', 'G3-B2', 'Godavari River Ghat',  24, 33, 92, false, 'Red'],
+  ['B1', 'River Ghat Food Court',     'G3-C2', 'Godavari River Ghat',  53, 29, 45, false, 'Yellow'],
+  ['B2', 'Durgamma Ghat Steps',       'G1-A1', 'Durgamma Ghat',        27, 10, 83, false, 'Red'],
+  ['B3', 'Durgamma Vendor Row',       'G1-B2', 'Durgamma Ghat',        50,  8, 37, false, 'Yellow'],
+  ['C2', 'Durgamma Parking',          'G1-C1', 'Durgamma Ghat',        82, 13, 54, false, 'Green'],
+  ['E2', 'Nitya Aarti Platform',      'G4-A1', 'Godavari Nitya Aarti', 26, 46, 73, false, 'Red'],
+  ['C3', 'Nitya Aarti Shoe Depot',    'G4-B2', 'Godavari Nitya Aarti', 51, 49, 29, false, 'Yellow'],
+  ['D1', 'Padmavathi Bathing Ghat',   'G6-A1', 'Padmavathi Ghat',      28, 78, 95, false, 'Red'],
+  ['D2', 'Padmavathi Vendor Walk',    'G6-B2', 'Padmavathi Ghat',      50, 74, 41, false, 'Yellow'],
+  ['E3', 'Padmavathi Transit Park',   'G6-C3', 'Padmavathi Ghat',      82, 82, 19, false, 'Green'],
 ]
 
 export function makeFleet() {
@@ -36,7 +60,7 @@ export function makeFleet() {
     battery: ri(28, 100), rssi: -ri(42, 88), temp: +rnd(14, 34).toFixed(1),
     fillRate: +rnd(0.8, 5.4).toFixed(1), team: TEAMS[i % 5], type: TYPES[i % 3],
     online: Math.random() > 0.08, sensorOk: Math.random() > 0.1, lastUpdateS: ri(2, 220),
-    isReal: b[7], firmware: pick(['v2.4.1', 'v2.4.1', 'v2.3.8', 'v2.5.0-rc']),
+    isReal: b[7], density: b[8], firmware: pick(['v2.4.1', 'v2.4.1', 'v2.3.8', 'v2.5.0-rc']),
     failedReads: ri(0, 6), echo: ri(2, 48),
     spark: Array.from({ length: 16 }, () => ri(Math.max(0, b[6] - 30), Math.min(100, b[6] + 8))),
   }))
@@ -123,16 +147,16 @@ export function driftFleet(fleet) {
 
 // ============================= Mock entities =============================
 export const CREW = [
-  ['Yusuf Khan', 'Alpha', 'Central', 'Morning', 12, 'On route'],
-  ['Mei Lin', 'Alpha', 'Central', 'Morning', 9, 'On route'],
-  ['Carlos Diaz', 'Bravo', 'North', 'Morning', 7, 'Available'],
-  ['Aisha Noor', 'Bravo', 'North', 'Evening', 0, 'Off shift'],
-  ['Tom Becker', 'Charlie', 'East', 'Morning', 14, 'On route'],
-  ['Priya Rao', 'Charlie', 'East', 'Evening', 3, 'Available'],
-  ['Jon Weaver', 'Delta', 'South', 'Morning', 11, 'On route'],
-  ['Lena Vogt', 'Delta', 'South', 'Evening', 0, 'Off shift'],
-  ['Sam Okoye', 'Echo', 'West', 'Morning', 8, 'Available'],
-  ['Nadia Haddad', 'Echo', 'West', 'Morning', 6, 'On route'],
+  ['Yusuf Khan', 'Alpha', 'Durgamma Ghat', 'Morning', 12, 'On route'],
+  ['Mei Lin', 'Alpha', 'Durgamma Ghat', 'Morning', 9, 'On route'],
+  ['Carlos Diaz', 'Bravo', 'Godavari River Ghat', 'Morning', 7, 'Available'],
+  ['Aisha Noor', 'Bravo', 'Godavari River Ghat', 'Evening', 0, 'Off shift'],
+  ['Tom Becker', 'Charlie', 'Godavari Nitya Aarti', 'Morning', 14, 'On route'],
+  ['Priya Rao', 'Charlie', 'Godavari Nitya Aarti', 'Evening', 3, 'Available'],
+  ['Jon Weaver', 'Delta', 'Pushkar Ghat', 'Morning', 11, 'On route'],
+  ['Lena Vogt', 'Delta', 'Pushkar Ghat', 'Evening', 0, 'Off shift'],
+  ['Sam Okoye', 'Echo', 'Padmavathi Ghat', 'Morning', 8, 'Available'],
+  ['Nadia Haddad', 'Echo', 'Padmavathi Ghat', 'Morning', 6, 'On route'],
 ]
 export const USERS = [
   ['Rao Maaz', 'quantumdataleap.ai', 'Admin', 'Active', '2m ago'],
@@ -166,15 +190,15 @@ export const ENDPOINTS = [
 ]
 export const CHAT_SESSIONS = [
   { caller: 'Dispatch (Elena)', ch: 'Voice', intent: 'Fullest bins', outcome: 'Resolved', time: '09:42', dur: '1m 12s',
-    msgs: [['u', 'Which bins need collection first this morning?'], ['a', 'Three bins are over 80% right now: BIN-D1 Stadium South at 95%, BIN-A3 Transit Hub at 91%, and BIN-B2 North Mall at 83%. Shall I dispatch the nearest crews?'], ['u', 'Yes, dispatch Alpha and Delta.'], ['a', 'Done. Team Alpha routed to BIN-A3 and Team Delta to BIN-D1. Estimated arrival 18 minutes.']] },
-  { caller: '+1 415 ••• 2290', ch: 'Phone', intent: 'Report overflow', outcome: 'Ticket created', time: '09:15', dur: '0m 48s',
-    msgs: [['u', 'The bin at Harbor Docks is overflowing.'], ['a', 'Thanks — that is BIN-C1, currently reading 88%. I have created a priority collection ticket and notified Team Charlie.']] },
+    msgs: [['u', 'Which bins need collection first this morning?'], ['a', 'Three bins are over 80% right now: BIN-D1 Padmavathi Bathing Ghat at 95%, BIN-A3 Pushkar Changing Rooms at 91%, and BIN-B2 Durgamma Ghat Steps at 83%. Shall I dispatch the nearest crews?'], ['u', 'Yes, dispatch Alpha and Delta.'], ['a', 'Done. Team Alpha routed to BIN-A3 and Team Delta to BIN-D1. Estimated arrival 18 minutes.']] },
+  { caller: '+91 94900 ••• 2290', ch: 'Phone', intent: 'Report overflow', outcome: 'Ticket created', time: '09:15', dur: '0m 48s',
+    msgs: [['u', 'The bin at the Godavari River Ghat bathing steps is overflowing.'], ['a', 'Thanks — that is BIN-C1, currently reading 88%. I have created a priority collection ticket and notified Team Bravo.']] },
   { caller: 'Field crew (Yusuf)', ch: 'WhatsApp', intent: 'Route status', outcome: 'Resolved', time: '08:58', dur: '0m 33s',
-    msgs: [['u', 'How many stops left on my route?'], ['a', 'You have 4 stops remaining on the Central route, next is BIN-A2 City Hall Plaza, 0.6 km away.']] },
+    msgs: [['u', 'How many stops left on my route?'], ['a', 'You have 4 stops remaining on the Godavari riverfront route, next is BIN-A2 River Ghat Aarti Platform, 0.6 km away.']] },
   { caller: 'Analytics bot', ch: 'API', intent: 'Diversion rate', outcome: 'Resolved', time: '08:30', dur: '0m 09s',
     msgs: [['u', 'What was yesterday’s recycling diversion rate?'], ['a', 'Yesterday’s diversion rate was 41.6%, up 2.3 points from the prior day.']] },
   { caller: 'Dispatch (Mark)', ch: 'Voice', intent: 'Battery alert', outcome: 'Escalated', time: '08:02', dur: '1m 40s',
-    msgs: [['u', 'Any sensors about to die?'], ['a', 'Two sensors are below 30% battery: BIN-E3 Lakeside at 24% and BIN-C3 East Gate at 28%. I have flagged both for the maintenance queue.']] },
+    msgs: [['u', 'Any sensors about to die?'], ['a', 'Two sensors are below 30% battery: BIN-E3 Padmavathi Transit Park at 24% and BIN-C3 Nitya Aarti Shoe Depot at 28%. I have flagged both for the maintenance queue.']] },
 ]
 export const VOICE_INTENTS = [
   ['Fullest bins', 34], ['Route status', 22], ['Report overflow', 16], ['Collection ETA', 11], ['Battery / health', 9], ['Reports & stats', 8],

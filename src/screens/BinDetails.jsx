@@ -3,7 +3,7 @@ import { PageHeader, Panel, StatusBadge } from '../components/ui.jsx'
 import { Gauge, Spark } from '../components/charts.jsx'
 import { BinScene } from '../components/BinScene.jsx'
 import { Icon } from '../components/icons.jsx'
-import { fillColor, ago } from '../data/model.js'
+import { fillColor, ago, GHATS, DENSITY } from '../data/model.js'
 
 function MiniStat({ icon, lab, val, cls }) {
   return (
@@ -21,11 +21,17 @@ const batClass = (b) => (b < 30 ? 'crit' : b < 55 ? 'warn' : 'ok')
 export default function BinDetails({ selectedBin, setSelectedBin, openBin, go }) {
   const { fleet } = useFleet()
   const b = fleet.find((x) => x.id === selectedBin) || fleet[0]
+  const g = GHATS[b.zone] || {}
+  const den = DENSITY[b.density] || {}
+  const coords = g.lat
+    ? `${(g.lat + (46 - b.y) / 9000).toFixed(5)}, ${(g.lng + (b.x - 40) / 9000).toFixed(5)}`
+    : '—'
   const specs = [
     ['Bin ID', b.id], ['Type', b.type], ['Capacity', b.capacity + ' L'],
-    ['Zone / Sector', b.zone + ' / ' + b.sector], ['Assigned Team', 'Team ' + b.team],
-    ['Coordinates', `${(b.x / 100 * 0.08 + 37.77).toFixed(4)}, ${(-122.42 + b.y / 100 * 0.08).toFixed(4)}`],
-    ['Distance (depot)', b.distance + ' km'], ['Temperature', b.temp + ' °C'],
+    ['Ghat / Grid cell', b.zone + ' · ' + b.sector], ['Assigned Team', 'Team ' + b.team],
+    ['Density zone', `${den.label} — ${den.spacing} spacing · check ${den.interval}`],
+    ['Coordinates', coords],
+    ['Distance (RMC)', b.distance + ' km'], ['Temperature', b.temp + ' °C'],
     ['Fill Rate', b.fillRate + ' %/h'], ['Firmware', b.firmware],
   ]
   const others = fleet.filter((x) => x.id !== b.id)
@@ -33,7 +39,7 @@ export default function BinDetails({ selectedBin, setSelectedBin, openBin, go })
     <>
       <PageHeader
         title={b.name}
-        sub={`${b.id} · ${b.sector} · ${b.zone} zone`}
+        sub={`${b.id} · ${b.sector} · ${b.zone}`}
         actions={
           <>
             <select className="sel" value={b.id} onChange={(e) => setSelectedBin(e.target.value)}>
