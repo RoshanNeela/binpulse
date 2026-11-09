@@ -10,5 +10,5 @@ export default defineConfig({
   server: { open: true, port: 5173 },
   // `npm start` (vite preview) serves the built dist/ — bind to all interfaces
   // so it is reachable on the server's public IP (e.g. behind PM2).
-  preview: { host: true, port: 5173 },
+  preview: { host: true, port: 3031 },
 })

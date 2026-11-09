@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite preview"
+    "start": "vite preview --host --port 3031"
   },
   "dependencies": {
     "react": "^18.3.1",
