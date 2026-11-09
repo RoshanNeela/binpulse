@@ -227,6 +227,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .svchips .chip{background:var(--surface);box-shadow:var(--shadow)}
 .svframe{display:block;width:100%;height:clamp(360px,56vh,560px);border:0;background:var(--surface-2)}
 .svnote{position:absolute;bottom:8px;right:10px;max-width:60%;text-align:right;font-size:10.5px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--border);border-radius:8px;padding:4px 8px;pointer-events:none}
+/* Street View fallback action bar (coverage varies by ghat) */
+.svbar{position:absolute;left:10px;right:10px;bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;font-weight:600;color:var(--muted);background:color-mix(in srgb,var(--surface) 90%,transparent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;box-shadow:var(--shadow)}
+.svbar>span{flex:1;min-width:140px}
+.svbar .chip{padding:3px 10px;font-size:11.5px}
 
 .sparkwrap{width:100%}
 .spec{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:10px;overflow:hidden}

@@ -32,7 +32,13 @@ export const streetViewUrl = (lat, lng, heading = 210) =>
   `https://maps.google.com/maps?q=&layer=c&cbll=${lat},${lng}&cbp=11,${heading},0,0,0&output=svembed`
 export const mapEmbedUrl = (lat, lng, z = 16, type = 'm') =>
   `https://maps.google.com/maps?q=${lat},${lng}&z=${z}&t=${type}&hl=en&output=embed`
+// no-marker overview (empty q = no pin, ll centres, t=k satellite) for the "all ghats" view
+export const mapOverviewUrl = (lat, lng, z = 14) =>
+  `https://maps.google.com/maps?q=&ll=${lat},${lng}&z=${z}&t=k&hl=en&output=embed`
 export const mapsLink = (lat, lng) => `https://www.google.com/maps/@${lat},${lng},18z`
+// opens the ghat directly in Google Maps Street View (works even where the inline embed has no imagery)
+export const streetViewLink = (lat, lng, heading = 270) =>
+  `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}&heading=${heading}`
 // Riverfront centre point for the "all ghats" overview (real Godavari bund, Rajamahendravaram).
 export const GHAT_CENTER = { lat: 17.0050, lng: 81.7690 }
 
