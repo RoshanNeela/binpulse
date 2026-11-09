@@ -28,7 +28,11 @@ export const DENSITY = {
 // Keyless Google Street View / map embeds for a ghat's riverfront point.
 export const streetViewUrl = (lat, lng, heading = 210) =>
   `https://maps.google.com/maps?q=&layer=c&cbll=${lat},${lng}&cbp=11,${heading},0,0,0&output=svembed`
+export const mapEmbedUrl = (lat, lng, z = 16, type = 'm') =>
+  `https://maps.google.com/maps?q=${lat},${lng}&z=${z}&t=${type}&hl=en&output=embed`
 export const mapsLink = (lat, lng) => `https://www.google.com/maps/@${lat},${lng},18z`
+// Riverfront centre point (mean of the ghats) for the "all ghats" overview.
+export const GHAT_CENTER = { lat: 16.9972, lng: 81.7832 }
 
 export const rnd = (a, b) => a + Math.random() * (b - a)
 export const ri = (a, b) => Math.floor(rnd(a, b + 1))

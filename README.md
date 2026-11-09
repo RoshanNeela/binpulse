@@ -12,7 +12,7 @@ with client-side simulated live sensor data (BIN-A1 represents the real ESP32 bi
 - **17 screens / 6 groups** — Monitor, Operations, Assistant, Insights, Devices, Administration.
 - **Live simulated telemetry** — the 14-bin fleet drifts every 3 seconds; BIN-A1 is overlaid as the "real" ESP32 bin.
 - **Animated bin graphics** — bins fill to their live level with a wobbling surface, bobbing lid, and overflow when full; a procedurally-generated bin scene fills with type-appropriate trash (recycling / organic / general).
-- **Live Map** — the Godavari riverfront at Rajamahendravaram (PS07 / Pushkaralu 2027), with the ghats as zones, PS07 Red/Yellow/Green crowd-density bands, animated bin markers color-coded by fill level, and a **Street View** mode with live Google Street View of each ghat.
+- **Live Map** — the Godavari riverfront at Rajamahendravaram (PS07 / Pushkaralu 2027) on a **real Google Map**, with the ghats as zones, a ghat picker, a PS07 Red/Yellow/Green density legend, and a **Street View** mode showing live Google Street View of each ghat. Bins are listed in the fill-priority panel alongside.
 - **Pure-SVG charts** — gauges, sparklines, a glowing 24h area chart with a danger zone, and gradient bar charts; no chart library.
 - **AI Voice Assistant** — answers fleet queries from live data with a typewriter effect.
 - **Light + dark themes** — token-based design system, respects `prefers-reduced-motion`.
