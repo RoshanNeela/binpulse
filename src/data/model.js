@@ -8,14 +8,16 @@ export const ZONES = ['Durgamma Ghat', 'Godavari River Ghat', 'Godavari Nitya Aa
 export const TEAMS = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo']
 export const TYPES = ['General', 'Recycling', 'Organic']
 
-// Ghat metadata — grid code + approximate riverfront coordinates for Street View.
-// Coordinates are illustrative; verify with georeferenced GIS/survey data (per PS07 brief).
+// Ghat metadata — grid code + real Godavari bund coordinates (Rajamahendravaram, left bank).
+// Pushkar Ghat and Saraswathi/Nitya-Aarti are authoritative (OpenStreetMap); the other three
+// are placed along the same bund between the known anchors. Verify with GIS survey (PS07).
+// Street View headings face west (~270°) toward the river.
 export const GHATS = {
-  'Durgamma Ghat':        { code: 'G1', short: 'Durgamma',    lat: 17.0051, lng: 81.7869, heading: 210 },
-  'Godavari River Ghat':  { code: 'G3', short: 'River Ghat',  lat: 16.9991, lng: 81.7844, heading: 205 },
-  'Godavari Nitya Aarti': { code: 'G4', short: 'Nitya Aarti', lat: 16.9956, lng: 81.7830, heading: 210 },
-  'Pushkar Ghat':         { code: 'G5', short: 'Pushkar',     lat: 16.9933, lng: 81.7818, heading: 220 },
-  'Padmavathi Ghat':      { code: 'G6', short: 'Padmavathi',  lat: 16.9894, lng: 81.7797, heading: 215 },
+  'Durgamma Ghat':        { code: 'G1', short: 'Durgamma',    lat: 17.0205, lng: 81.7686, heading: 275 }, // north bund (approx)
+  'Godavari River Ghat':  { code: 'G3', short: 'River Ghat',  lat: 17.0150, lng: 81.7673, heading: 275 }, // Kotilingala Revu stretch (approx)
+  'Pushkar Ghat':         { code: 'G5', short: 'Pushkar',     lat: 17.0084, lng: 81.7669, heading: 270 }, // OSM: Pushkar Ghat
+  'Godavari Nitya Aarti': { code: 'G4', short: 'Nitya Aarti', lat: 16.9948, lng: 81.7709, heading: 265 }, // OSM: Saraswathi Ghat (aarti)
+  'Padmavathi Ghat':      { code: 'G6', short: 'Padmavathi',  lat: 16.9908, lng: 81.7726, heading: 265 }, // south bund (approx)
 }
 
 // Density zones from the PS07 Grid Allocation Framework.
@@ -31,8 +33,8 @@ export const streetViewUrl = (lat, lng, heading = 210) =>
 export const mapEmbedUrl = (lat, lng, z = 16, type = 'm') =>
   `https://maps.google.com/maps?q=${lat},${lng}&z=${z}&t=${type}&hl=en&output=embed`
 export const mapsLink = (lat, lng) => `https://www.google.com/maps/@${lat},${lng},18z`
-// Riverfront centre point (mean of the ghats) for the "all ghats" overview.
-export const GHAT_CENTER = { lat: 16.9972, lng: 81.7832 }
+// Riverfront centre point for the "all ghats" overview (real Godavari bund, Rajamahendravaram).
+export const GHAT_CENTER = { lat: 17.0050, lng: 81.7690 }
 
 export const rnd = (a, b) => a + Math.random() * (b - a)
 export const ri = (a, b) => Math.floor(rnd(a, b + 1))
