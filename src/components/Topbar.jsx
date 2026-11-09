@@ -3,7 +3,7 @@ import { Icon } from './icons.jsx'
 import { useFleet } from '../state/FleetContext.jsx'
 
 export default function Topbar({ go, onMenu, theme, toggleTheme }) {
-  const { activeAlerts } = useFleet()
+  const { activeAlerts, live } = useFleet()
   const [q, setQ] = useState('')
   const al = activeAlerts.length
   return (
@@ -19,7 +19,9 @@ export default function Topbar({ go, onMenu, theme, toggleTheme }) {
         />
       </label>
       <span className="livepill"><span className="livedot" />LIVE · ESP32</span>
-      <span className="demochip">DEMO DATA</span>
+      <span className={live ? 'livepill' : 'demochip'} title={live ? 'Live data from the BinPulse backend' : 'Backend unreachable — local simulation'}>
+        {live ? 'BACKEND' : 'DEMO DATA'}
+      </span>
       <button className="tbtn" title="Toggle theme" aria-label="Toggle theme" onClick={toggleTheme}>
         <Icon name={theme === 'dark' ? 'moon' : 'sun'} />
       </button>

@@ -46,8 +46,13 @@ img{max-width:100%}
 .app{display:grid;grid-template-columns:248px 1fr;min-height:100%}
 .nav{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .brand{display:flex;align-items:center;gap:10px;padding:18px 18px 14px}
-.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#fff;flex:none}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#fff;flex:none;animation:brand-pulse 2.4s ease-in-out infinite}
 .brand .logo svg{width:20px;height:20px}
+@keyframes brand-pulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}
+  50%{transform:scale(1.06);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 0%,transparent)}
+}
+@media (prefers-reduced-motion:reduce){.brand .logo{animation:none}}
 .brand b{font-family:var(--font-d);font-size:16px;letter-spacing:-.02em;display:block;line-height:1.1}
 .brand span{font-size:11px;color:var(--muted);letter-spacing:.04em}
 .navscroll{flex:1;overflow-y:auto;padding:4px 10px 16px}
@@ -260,6 +265,34 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px}
 .danger{border:1px solid color-mix(in srgb,var(--crit) 45%,var(--border));background:var(--crit-bg)}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;font-size:13px;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.25);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ---- Floating chat assistant (any page) ---- */
+.cw{position:fixed;right:20px;bottom:20px;z-index:150;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.cw-fab{width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#000));
+  box-shadow:0 10px 28px color-mix(in srgb,var(--accent) 45%,transparent);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+.cw-fab:hover{transform:translateY(-2px) scale(1.04)}
+.cw-fab.on{transform:rotate(90deg)}
+.cw-fab.on:hover{transform:rotate(90deg) scale(1.04)}
+.cw-panel{width:min(360px,calc(100vw - 32px));height:min(480px,calc(100vh - 120px));display:flex;flex-direction:column;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);animation:cw-in .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes cw-in{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.cw-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.cw-id{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.cw-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.cw-head-act{display:flex;align-items:center;gap:4px}
+.cw-icon{width:28px;height:28px;border-radius:8px;border:0;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;font-size:14px}
+.cw-icon:hover{background:var(--surface-2);color:var(--fg)}
+.cw-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px}
+.cw-sugg{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}
+.cw-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border)}
+.cw-input .inp{flex:1}
+.cw-send{flex:none;width:38px;border-radius:10px;border:0;cursor:pointer;color:#fff;background:var(--accent);display:grid;place-items:center}
+.cw-send:hover{filter:brightness(1.08)}
+@media (max-width:980px){.cw{right:16px;bottom:16px}.cw-fab{width:52px;height:52px}}
+@media (prefers-reduced-motion:reduce){.cw-panel{animation:none}.cw-fab{transition:none}}
 
 .scrim{display:none}
 @media (max-width:980px){
